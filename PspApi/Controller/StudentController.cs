@@ -48,14 +48,20 @@ namespace PspApi.Controller
             if (!Regex.IsMatch(student.Full_name, @"^[А-Яа-яЁёA-Za-z\s]+$"))
                 return BadRequest("Имя должно содержать только буквы и пробелы.");
 
- 
+            // Проверка на наличие студента с таким же ФИО
+            var existingStudent = await _context.Student
+                .FirstOrDefaultAsync(s => s.Full_name == student.Full_name);
+
+            if (existingStudent != null)
+                return BadRequest("Студент с таким ФИО уже существует.");
+
+            // Добавление студента в базу данных
             _context.Student.Add(student);
             await _context.SaveChangesAsync();
 
             return Ok("Студент добавлен успешно.");
         }
 
-       
 
         // Удаление студента
         [HttpDelete("delete/{id}")]

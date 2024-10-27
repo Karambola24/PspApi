@@ -40,16 +40,23 @@ namespace PspApi.Controller
         [HttpPost("add")]
         public async Task<IActionResult> AddDiscipline([FromBody] Discipline discipline)
         {
- 
             if (string.IsNullOrWhiteSpace(discipline.Name) || discipline.Name.Length > 100)
                 return BadRequest("Название дисциплины не должно быть пустым и не должно превышать 100 символов.");
 
             if (!Regex.IsMatch(discipline.Name, @"^[А-Яа-яЁёA-Za-z\s]+$"))
                 return BadRequest("Название дисциплины должно содержать только буквы и пробелы.");
-          _context.Discipline.Add(discipline);
+
+            var existingDiscipline = await _context.Discipline
+                .FirstOrDefaultAsync(d => d.Name == discipline.Name);
+
+            if (existingDiscipline != null)
+                return BadRequest("Дисциплина с таким названием уже существует.");
+
+            _context.Discipline.Add(discipline);
             await _context.SaveChangesAsync();
 
             return Ok("Дисциплина добавлена успешно.");
         }
+
     }
 }
